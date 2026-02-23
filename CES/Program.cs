@@ -38,12 +38,20 @@ class Program
     // Blob container name for checkpoints
     const string BlobContainerName = "f1-ces-checkpoints";
 
+    // Azure Service Bus namespace (e.g., "f1racing-ns.servicebus.windows.net")
+    // Used to send AI-generated race engineer alerts.
+    const string ServiceBusNamespace = "<YourServiceBusNamespace>.servicebus.windows.net";
+
+    // Service Bus queue for race engineer notifications
+    const string ServiceBusQueueName = "race-engineer-alerts";
+
     // Consumer group (use $Default for Basic tier Event Hubs)
     const string ConsumerGroup = EventHubConsumerClient.DefaultConsumerGroupName;
 
     // ═══════════════════════════════════════════════════════════════════════
 
     static int _eventCount = 0;
+    static RaceEngineerService _raceEngineer = null!;
 
     static async Task Main(string[] args)
     {
@@ -52,6 +60,9 @@ class Program
         // Use DefaultAzureCredential — picks up managed identity in Azure,
         // falls back to Azure CLI / Visual Studio credentials for local dev.
         var credential = new DefaultAzureCredential();
+
+        // Initialize the AI-powered race engineer
+        _raceEngineer = new RaceEngineerService(ServiceBusNamespace, ServiceBusQueueName, credential);
 
         // Create the blob container client for checkpoint storage
         var blobUri = new Uri($"{BlobStorageUrl}/{BlobContainerName}");
@@ -90,6 +101,7 @@ class Program
 
         Console.WriteLine("\n  Stopping processor...");
         await processor.StopProcessingAsync();
+        await _raceEngineer.DisposeAsync();
         Console.WriteLine($"  Done. Processed {_eventCount} events total.");
     }
 
@@ -120,6 +132,11 @@ class Program
 
             // Format and display based on table
             DisplayEvent(table, operation, time, data);
+
+            // Evaluate for unexpected events — triggers Claude + Service Bus if anomaly detected
+            var recommendation = await _raceEngineer.EvaluateEventAsync(table, operation, data);
+            if (recommendation != null)
+                DisplayEngineerRadio(recommendation);
         }
         catch (Exception ex)
         {
@@ -360,6 +377,57 @@ class Program
         Console.Write(cols.ToString()[..Math.Min(cols.ToString().Length, 120)]);
         Console.ResetColor();
         Console.WriteLine();
+    }
+
+    /// <summary>
+    /// Displays a Claude-generated race engineer recommendation as a team radio block.
+    /// </summary>
+    static void DisplayEngineerRadio(string recommendation)
+    {
+        const int boxWidth = 63;
+        var lines = WordWrap(recommendation, boxWidth - 6); // 6 = padding + border chars
+
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.DarkYellow;
+        Console.WriteLine($"  {new string('\u2550', boxWidth)}");
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine($"  \u2551  TEAM RADIO \u2014 Race Engineer (AI)  {new string(' ', boxWidth - 40)}\u2551");
+        Console.ForegroundColor = ConsoleColor.DarkYellow;
+        Console.WriteLine($"  {new string('\u2500', boxWidth)}");
+
+        Console.ForegroundColor = ConsoleColor.White;
+        foreach (var line in lines)
+            Console.WriteLine($"  \u2551  {line.PadRight(boxWidth - 5)} \u2551");
+
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.WriteLine($"  \u2551  {"\u25BA Sent to race-engineer-alerts queue".PadRight(boxWidth - 5)} \u2551");
+        Console.ForegroundColor = ConsoleColor.DarkYellow;
+        Console.WriteLine($"  {new string('\u2550', boxWidth)}");
+        Console.ResetColor();
+        Console.WriteLine();
+    }
+
+    static List<string> WordWrap(string text, int maxWidth)
+    {
+        var lines = new List<string>();
+        var words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var current = "";
+
+        foreach (var word in words)
+        {
+            if (current.Length + word.Length + 1 > maxWidth)
+            {
+                lines.Add(current);
+                current = word;
+            }
+            else
+            {
+                current = current.Length == 0 ? word : $"{current} {word}";
+            }
+        }
+        if (current.Length > 0) lines.Add(current);
+
+        return lines;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
