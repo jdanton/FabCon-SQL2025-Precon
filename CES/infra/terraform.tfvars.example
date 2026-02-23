@@ -1,0 +1,9 @@
+# Copy this file to terraform.tfvars and fill in your values.
+
+prefix   = "f1ces"
+location = "eastus"
+
+# Full resource ID of your Azure VM running SQL Server 2025.
+# Find it in Azure Portal → VM → Properties → Resource ID, or run:
+#   az vm show -g <resource-group> -n <vm-name> --query id -o tsv
+vm_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/my-rg/providers/Microsoft.Compute/virtualMachines/my-sql-vm"
