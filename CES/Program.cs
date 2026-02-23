@@ -9,6 +9,7 @@
 //   3. Run the SQL scripts in SSMS side-by-side
 // ============================================================================
 
+using Azure.Identity;
 using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Consumer;
 using Azure.Messaging.EventHubs.Processor;
@@ -24,15 +25,15 @@ class Program
     // CONFIGURATION — Update these values for your environment
     // ═══════════════════════════════════════════════════════════════════════
 
-    // Event Hubs connection string (from Azure portal > Event Hubs namespace > Shared access policies)
-    const string EventHubConnectionString = "<YourEventHubsConnectionString>";
+    // Event Hubs namespace (e.g., "f1racing-ns.servicebus.windows.net")
+    const string EventHubNamespace = "<YourEventHubsNamespace>.servicebus.windows.net";
 
     // The Event Hub instance name (e.g., "f1-race-events")
     const string EventHubName = "<YourEventHubsInstance>";
 
-    // Azure Blob Storage connection string (used for checkpointing)
+    // Azure Blob Storage account URL (used for checkpointing)
     // The processor tracks which events have been read so it can resume after restarts.
-    const string BlobStorageConnectionString = "<YourBlobStorageConnectionString>";
+    const string BlobStorageUrl = "https://<YourStorageAccount>.blob.core.windows.net";
 
     // Blob container name for checkpoints
     const string BlobContainerName = "f1-ces-checkpoints";
@@ -48,16 +49,22 @@ class Program
     {
         PrintBanner();
 
+        // Use DefaultAzureCredential — picks up managed identity in Azure,
+        // falls back to Azure CLI / Visual Studio credentials for local dev.
+        var credential = new DefaultAzureCredential();
+
         // Create the blob container client for checkpoint storage
-        var storageClient = new BlobContainerClient(BlobStorageConnectionString, BlobContainerName);
+        var blobUri = new Uri($"{BlobStorageUrl}/{BlobContainerName}");
+        var storageClient = new BlobContainerClient(blobUri, credential);
         await storageClient.CreateIfNotExistsAsync();
 
         // Create the Event Processor
         var processor = new EventProcessorClient(
             storageClient,
             ConsumerGroup,
-            EventHubConnectionString,
-            EventHubName);
+            EventHubNamespace,
+            EventHubName,
+            credential);
 
         // Wire up event handlers
         processor.ProcessEventAsync += ProcessEventHandler;

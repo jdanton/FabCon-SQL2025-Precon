@@ -7,7 +7,10 @@
 --   <YourMasterKeyPassword>    - A strong password for the database master key
 --   <YourEventHubsNamespace>   - e.g. f1racing-ns
 --   <YourEventHubsInstance>    - e.g. f1-race-events
---   <YourSASToken>             - Full SAS token starting with "SharedAccessSignature sr=..."
+--
+-- PREREQUISITES:
+--   The SQL Server's managed identity (system-assigned or user-assigned) must
+--   be granted the "Azure Event Hubs Data Sender" role on the Event Hub.
 -- ============================================================================
 
 USE F1RaceOps;
@@ -23,20 +26,18 @@ END
 GO
 
 -- ── Step 2: Create a database-scoped credential for Event Hubs ──────────────
--- This uses SAS token authentication. For Azure SQL Database, you can
--- alternatively use Managed Identity (see readme for details).
+-- This uses Managed Identity authentication. No secrets to manage or rotate.
+-- The SQL Server's identity must have "Azure Event Hubs Data Sender" on the hub.
 
 IF EXISTS (SELECT 1 FROM sys.database_scoped_credentials WHERE name = 'F1EventHubCredential')
     DROP DATABASE SCOPED CREDENTIAL F1EventHubCredential;
 GO
 
 CREATE DATABASE SCOPED CREDENTIAL F1EventHubCredential
-    WITH IDENTITY = 'SHARED ACCESS SIGNATURE',
-    SECRET = '<YourSASToken>';
-    -- Example: 'SharedAccessSignature sr=https%3a%2f%2ff1racing-ns.servicebus.windows.net%2ff1-race-events&sig=xxxxx&se=1750000000&skn=SendPolicy'
+    WITH IDENTITY = 'Managed Identity';
 GO
 
-PRINT 'Database-scoped credential created.';
+PRINT 'Database-scoped credential created (Managed Identity).';
 GO
 
 -- ── Step 3: Enable Change Event Streaming on the database ───────────────────
