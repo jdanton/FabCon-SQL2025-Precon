@@ -316,6 +316,8 @@
 - **Operational RAG:** Store vectors and data together for consistency
 - **Structured Queries:** Allow LLMs to query structured data with rich metadata and query optimization
 
+  #Show Davide's repo.
+
 ### Slide 44: The Vector Data Type
 - New native `vector` data type
 - Stores arrays of floating-point numbers
