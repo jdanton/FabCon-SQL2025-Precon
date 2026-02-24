@@ -656,7 +656,7 @@
 
 ---
 
-## MODULE 7: CONNECTED WITH ARC (~45 min including demos)
+## MODULE 7: CONNECTED WITH ARC (~25 min including demos)
 
 ---
 
@@ -703,7 +703,7 @@
 
 ---
 
-## MODULE 8: FABRIC INTEGRATION & MIRRORING (~30 min)
+## MODULE 8: FABRIC INTEGRATION & MIRRORING (~45 min)
 
 ---
 
