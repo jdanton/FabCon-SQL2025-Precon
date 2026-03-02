@@ -394,7 +394,7 @@
 - AI models (ground and/or cloud) are isolated from SQL Server
 - Use RLS, TDE, and Dynamic Data Masking on vector data
 - Track everything with SQL Server Auditing
-- Ledger for chat history and feedback
+
 
 ### Slide 54: AI Provider Flexibility
 - Azure OpenAI — cloud hosted, enterprise grade
