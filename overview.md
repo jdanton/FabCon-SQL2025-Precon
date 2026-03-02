@@ -232,28 +232,33 @@
 - **CDC:** Data warehousing, auditing, ETL pipelines
 - **CES:** Event-driven architectures, microservices integration, real-time analytics, cache sync, AI Agents
 
-### Slide 33: CES Architecture — Contoso Shipping Example
-- Scenario: Contoso shipping detects order changes via CES
-- Flow: Order changes → CES → Azure Event Hub → Azure Functions → Azure AI Foundry
-- AI Agent resolves shipping issues → updates estimated ship date
-- Demonstrates real-world event-driven architecture with AI integration
 
-### Slide 34: CES — Event Payload and Configuration
-- Event structure: operation type, row data, schema information
-- Configuration via T-SQL
-- Monitoring and diagnostics
+### Slide 33: CES Architecture — F1 Race Operations Example
+
+- Scenario: An F1 team's pit wall detects live race changes via CES — position swaps, pit stops, safety car deployments
+- Flow: Race data changes → CES → Azure Event Hub → Azure Functions → Azure AI Foundry
+- AI Agent analyzes tire degradation and gap data → recommends optimal pit stop window and compound selection
+- Demonstrates real-world event-driven architecture with AI integration — where milliseconds matter
+
+**Slide 34: CES — Event Payload and Configuration**
+
+- Event structure: operation type (INS/UPD/DEL), row data with old and new values, schema information
+- Configuration via T-SQL: `sp_enable_event_stream`, `sp_create_event_stream_group`, `sp_add_object_to_event_stream_group`
+- Monitoring and diagnostics via `dm_change_feed_errors` and `dm_change_feed_log_scan_sessions`
 - Error handling and retry behavior
 
-> **🔬 DEMO: Change Event Streaming**
-> - Repo: `sql2025book` — Developers chapter / CES demos
-> - Walkthrough:
->   - Set up CES on a table
->   - Make data changes (INSERT, UPDATE, DELETE)
->   - Observe events streaming to Event Hub
->   - Examine the event payload structure
->   - Discuss integration patterns with Azure Functions and AI Agents
-> - **Talking point:** "Contoso needs help with shipping problems"
-> - ~5-6 min demo
+**🏁 DEMO: Change Event Streaming**
+
+- Repo: F1 Race Operations CES Demo
+- Walkthrough:
+  - Create the F1RaceOps database and race operations schema (Drivers, LiveTiming, PitStops, RaceControl)
+  - Configure CES with Table partitioning — pit stops and timing data route to separate Event Hub partitions
+  - Simulate a live Monaco Grand Prix: lights out, position battles, pit stops, a safety car crash, and chequered flag
+  - Observe events streaming to Event Hub in the consumer app — see INSERTs for pit stops, UPDATEs with old/new positions, race control messages in near real-time
+  - Examine the CloudEvent payload structure (e.g., a pit stop event with tire compound in/out, stop duration, lap number)
+  - Discuss integration patterns: Azure Functions consuming pit stop events to trigger an AI Agent that models tire degradation and radios back a strategy recommendation
+- Talking point: "The pit wall needs to know the instant a rival pits — not 30 seconds later when a polling job runs. CES gives us that push-based, real-time pipeline from the database to the strategy tools."
+
 
 ### Slide 35: REST API Connectivity
 - `sp_invoke_external_rest_endpoint` — call any REST service from T-SQL
