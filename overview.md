@@ -534,7 +534,7 @@
 - CE (Cardinality Estimator) feedback for expressions
 - Optional parameter plans optimization (building on PSP from 2022)
 - DOP (Degree of Parallelism) feedback — now ON by default
-- Key theme: the optimizer learns and adapts, no code changes needed
+- Key theme: the optimizer learns and adapts, fewer code changes needed
 
 ### Slide 69: Optimized sp_executesql
 - Better plan reuse for parameterized queries
