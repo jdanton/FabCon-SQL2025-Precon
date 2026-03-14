@@ -140,16 +140,27 @@ class Program
             else
                 data = dataRaw;
 
-            // DEBUG: Print the actual payload structure to understand the CES format
+            // DEBUG: Print eventrow and top-level CloudEvent keys
             Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine($"  [DEBUG] data keys: {string.Join(", ", EnumerateKeys(data))}");
-            Console.WriteLine($"  [DEBUG] data: {Truncate(data.ToString(), 500)}");
+            Console.WriteLine($"  [DEBUG] CloudEvent keys: {string.Join(", ", EnumerateKeys(cloudEvent))}");
+            if (data.TryGetProperty("eventrow", out var debugRow))
+                Console.WriteLine($"  [DEBUG] eventrow: {Truncate(debugRow.ToString(), 800)}");
             Console.ResetColor();
 
-            // Extract CES-specific fields
-            var schema = GetString(data, "schema");
-            var table = GetString(data, "table");
-            var operation = GetString(data, "operation");
+            // Extract CES-specific fields from actual payload structure
+            var eventsource = data.GetProperty("eventsource");
+            var schema = GetString(eventsource, "schema");
+            var table = GetString(eventsource, "tbl");
+
+            // Operation type may be in CloudEvent type field or eventrow
+            var ceType = GetString(cloudEvent, "type");
+            var operation = "INS"; // default
+            if (data.TryGetProperty("eventrow", out var eventRow))
+            {
+                // Check if operation is in eventrow
+                var opFromRow = GetString(eventRow, "op");
+                if (!string.IsNullOrEmpty(opFromRow)) operation = opFromRow;
+            }
 
             // Format and display based on table
             DisplayEvent(table, operation, time, data);
