@@ -459,49 +459,31 @@ class Program
 
         var dict = new Dictionary<string, object?>();
 
-        // Get column definitions
-        if (eventsource.TryGetProperty("cols", out var cols) && cols.ValueKind == JsonValueKind.Array)
+        if (!eventsource.TryGetProperty("cols", out var cols) || cols.ValueKind != JsonValueKind.Array)
+            return data;
+
+        // CES uses "current" for new values, "old" for previous values
+        JsonElement? newVals = null;
+        JsonElement? oldVals = null;
+
+        if (eventrow.TryGetProperty("current", out var cur))
+            newVals = cur;
+        else if (eventrow.TryGetProperty("newvalues", out var nv))
+            newVals = nv;
+        else if (eventrow.ValueKind == JsonValueKind.Array)
+            newVals = eventrow;
+
+        if (eventrow.TryGetProperty("old", out var old))
+            oldVals = old;
+
+        if (newVals.HasValue && newVals.Value.ValueKind == JsonValueKind.Array)
         {
-            // Try to extract values from eventrow
-            // eventrow may have "newvalues"/"oldvalues" arrays, or "vals", or be an array itself
-            JsonElement? newVals = null;
-            JsonElement? oldVals = null;
-
-            // CES uses "current" for new values, "old" for previous values
-            if (eventrow.TryGetProperty("current", out var cur))
-                newVals = cur;
-            else if (eventrow.TryGetProperty("newvalues", out var nv))
-                newVals = nv;
-            else if (eventrow.TryGetProperty("vals", out var v))
-                newVals = v;
-            else if (eventrow.ValueKind == JsonValueKind.Array)
-                newVals = eventrow;
-
-            if (eventrow.TryGetProperty("old", out var old))
-                oldVals = old;
-            else if (eventrow.TryGetProperty("oldvalues", out var ov))
-                oldVals = ov;
-
-            if (newVals.HasValue && newVals.Value.ValueKind == JsonValueKind.Array)
+            foreach (var col in cols.EnumerateArray())
             {
-                foreach (var col in cols.EnumerateArray())
-                {
-                    var name = GetString(col, "name");
-                    var idx = GetInt(col, "index");
-                    if (!string.IsNullOrEmpty(name) && idx < newVals.Value.GetArrayLength())
-                        dict[name] = ExtractValue(newVals.Value[idx]);
-                }
-            }
-
-            // Also try reading eventrow as an object with named properties
-            if (!newVals.HasValue && eventrow.ValueKind == JsonValueKind.Object)
-            {
-                foreach (var col in cols.EnumerateArray())
-                {
-                    var name = GetString(col, "name");
-                    if (!string.IsNullOrEmpty(name) && eventrow.TryGetProperty(name, out var val))
-                        dict[name] = ExtractValue(val);
-                }
+                var name = GetString(col, "name");
+                var idx = GetInt(col, "index");
+                if (!string.IsNullOrEmpty(name) && idx < newVals.Value.GetArrayLength())
+                    dict[name] = ExtractValue(newVals.Value[idx]);
             }
         }
 
