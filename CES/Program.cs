@@ -69,13 +69,21 @@ class Program
         var storageClient = new BlobContainerClient(blobUri, credential);
         await storageClient.CreateIfNotExistsAsync();
 
-        // Create the Event Processor
+        // Create the Event Processor with low-latency settings
+        var processorOptions = new EventProcessorClientOptions
+        {
+            MaximumWaitTime = TimeSpan.FromMilliseconds(20),
+            PrefetchCount = 10,
+            CacheEventCount = 10
+        };
+
         var processor = new EventProcessorClient(
             storageClient,
             ConsumerGroup,
             EventHubNamespace,
             EventHubName,
-            credential);
+            credential,
+            processorOptions);
 
         // Wire up event handlers
         processor.ProcessEventAsync += ProcessEventHandler;
