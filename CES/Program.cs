@@ -156,10 +156,17 @@ class Program
             // Format and display based on table
             DisplayEvent(table, operation, time, columns);
 
-            // Evaluate for unexpected events — triggers Claude + Service Bus if anomaly detected
-            var recommendation = await _raceEngineer.EvaluateEventAsync(table, operation, columns);
-            if (recommendation != null)
-                DisplayEngineerRadio(recommendation);
+            // Evaluate for unexpected events — fire-and-forget so we don't block the event loop
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var recommendation = await _raceEngineer.EvaluateEventAsync(table, operation, columns);
+                    if (recommendation != null)
+                        DisplayEngineerRadio(recommendation);
+                }
+                catch { /* swallow — don't crash the consumer */ }
+            });
         }
         catch (Exception ex)
         {
