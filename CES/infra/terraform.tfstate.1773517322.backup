@@ -1,0 +1,119 @@
+{
+  "version": 4,
+  "terraform_version": "1.14.0",
+  "serial": 4,
+  "lineage": "81244827-b163-bfd8-6eae-55992400ea1f",
+  "outputs": {
+    "eventhub_name": {
+      "value": "f1-race-events",
+      "type": "string"
+    },
+    "eventhub_namespace": {
+      "value": "f1ces-ns-3308.servicebus.windows.net",
+      "type": "string"
+    },
+    "resource_group_name": {
+      "value": "rg-f1ces-demo",
+      "type": "string"
+    },
+    "servicebus_namespace": {
+      "value": "f1ces-sb-3308.servicebus.windows.net",
+      "type": "string"
+    },
+    "storage_account_url": {
+      "value": null,
+      "type": "string"
+    },
+    "vm_principal_id": {
+      "value": "78d962e3-862e-4ce6-ab67-a2314d336223",
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "mode": "data",
+      "type": "azurerm_virtual_machine",
+      "name": "sql_vm",
+      "provider": "provider[\"registry.terraform.io/hashicorp/azurerm\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "/subscriptions/424d0f78-5980-4d31-98ec-624616db8e74/resourceGroups/SQLCon-Precon/providers/Microsoft.Compute/virtualMachines/SQL1-Joey",
+            "identity": [
+              {
+                "identity_ids": [],
+                "principal_id": "78d962e3-862e-4ce6-ab67-a2314d336223",
+                "tenant_id": "eabcb629-4b15-4995-9e10-86623c1e2e77",
+                "type": "SystemAssigned"
+              }
+            ],
+            "location": "eastus2",
+            "name": "SQL1-Joey",
+            "power_state": "running",
+            "private_ip_address": "10.0.0.4",
+            "private_ip_addresses": [
+              "10.0.0.4"
+            ],
+            "public_ip_address": "172.210.180.108",
+            "public_ip_addresses": [
+              "172.210.180.108"
+            ],
+            "resource_group_name": "SQLCon-Precon",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "azurerm_resource_group",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/azurerm\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "/subscriptions/424d0f78-5980-4d31-98ec-624616db8e74/resourceGroups/SQLCon-Precon",
+            "location": "eastus2",
+            "managed_by": "",
+            "name": "SQLCon-Precon",
+            "tags": {},
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "name": "SQLCon-Precon",
+            "subscription_id": "424d0f78-5980-4d31-98ec-624616db8e74"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo1NDAwMDAwMDAwMDAwLCJkZWxldGUiOjU0MDAwMDAwMDAwMDAsInJlYWQiOjMwMDAwMDAwMDAwMCwidXBkYXRlIjo1NDAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIwIn0="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "random_integer",
+      "name": "suffix",
+      "provider": "provider[\"registry.terraform.io/hashicorp/random\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "3308",
+            "keepers": null,
+            "max": 9999,
+            "min": 1000,
+            "result": 3308,
+            "seed": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}

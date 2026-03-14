@@ -56,7 +56,7 @@ GO
 EXEC sys.sp_create_event_stream_group
     @stream_group_name      = N'F1RaceStreamGroup',
     @destination_type       = N'AzureEventHubsAmqp',
-    @destination_location   = N'<YourEventHubsNamespace>.servicebus.windows.net/<YourEventHubsInstance>',
+    @destination_location   = N'f1ces-ns-3308.servicebus.windows.net/f1-race-events',
     @destination_credential = F1EventHubCredential,
     @max_message_size_kb    = 256,
     @partition_key_scheme   = N'Table';

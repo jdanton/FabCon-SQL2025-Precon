@@ -26,21 +26,21 @@ class Program
     // ═══════════════════════════════════════════════════════════════════════
 
     // Event Hubs namespace (e.g., "f1racing-ns.servicebus.windows.net")
-    const string EventHubNamespace = "<YourEventHubsNamespace>.servicebus.windows.net";
+    const string EventHubNamespace = "f1ces-ns-3308.servicebus.windows.net";
 
     // The Event Hub instance name (e.g., "f1-race-events")
-    const string EventHubName = "<YourEventHubsInstance>";
+    const string EventHubName = "f1-race-events";
 
     // Azure Blob Storage account URL (used for checkpointing)
     // The processor tracks which events have been read so it can resume after restarts.
-    const string BlobStorageUrl = "https://<YourStorageAccount>.blob.core.windows.net";
+    const string BlobStorageUrl = "https://f1cesstore3308.blob.core.windows.net";
 
     // Blob container name for checkpoints
     const string BlobContainerName = "f1-ces-checkpoints";
 
     // Azure Service Bus namespace (e.g., "f1racing-ns.servicebus.windows.net")
     // Used to send AI-generated race engineer alerts.
-    const string ServiceBusNamespace = "<YourServiceBusNamespace>.servicebus.windows.net";
+    const string ServiceBusNamespace = "f1ces-sb-3308.servicebus.windows.net";
 
     // Service Bus queue for race engineer notifications
     const string ServiceBusQueueName = "race-engineer-alerts";
