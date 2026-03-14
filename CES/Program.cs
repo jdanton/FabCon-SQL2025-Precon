@@ -136,11 +136,15 @@ class Program
             var columns = BuildNamedColumns(data);
 
             // DEBUG: dump first event or when --debug flag is set
-            if (_debug || _eventCount == 1)
+            if (_debug || _eventCount <= 2)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 if (data.TryGetProperty("eventrow", out var debugRow))
+                {
                     Console.WriteLine($"  [DEBUG] eventrow keys: {string.Join(", ", EnumerateKeys(debugRow))}");
+                    if (debugRow.TryGetProperty("current", out var curDebug))
+                        Console.WriteLine($"  [DEBUG] current type: {curDebug.ValueKind}, content: {Truncate(curDebug.ToString(), 500)}");
+                }
                 Console.WriteLine($"  [DEBUG] built columns: {Truncate(columns.ToString(), 500)}");
                 Console.ResetColor();
             }
@@ -476,29 +480,48 @@ class Program
         if (eventrow.TryGetProperty("old", out var old))
             oldVals = old;
 
-        if (newVals.HasValue && newVals.Value.ValueKind == JsonValueKind.Array)
+        if (newVals.HasValue)
         {
-            foreach (var col in cols.EnumerateArray())
+            if (newVals.Value.ValueKind == JsonValueKind.Array)
             {
-                var name = GetString(col, "name");
-                var idx = GetInt(col, "index");
-                if (!string.IsNullOrEmpty(name) && idx < newVals.Value.GetArrayLength())
-                    dict[name] = ExtractValue(newVals.Value[idx]);
+                // Array of values — map by column index
+                foreach (var col in cols.EnumerateArray())
+                {
+                    var name = GetString(col, "name");
+                    var idx = GetInt(col, "index");
+                    if (!string.IsNullOrEmpty(name) && idx < newVals.Value.GetArrayLength())
+                        dict[name] = ExtractValue(newVals.Value[idx]);
+                }
+            }
+            else if (newVals.Value.ValueKind == JsonValueKind.Object)
+            {
+                // Object with named properties — read directly
+                foreach (var prop in newVals.Value.EnumerateObject())
+                    dict[prop.Name] = ExtractValue(prop.Value);
             }
         }
 
         // Build old_columns for UPD change detection
-        if (oldVals.HasValue && oldVals.Value.ValueKind == JsonValueKind.Array)
+        if (oldVals.HasValue)
         {
             var oldDict = new Dictionary<string, object?>();
-            foreach (var col in cols.EnumerateArray())
+            if (oldVals.Value.ValueKind == JsonValueKind.Array)
             {
-                var name = GetString(col, "name");
-                var idx = GetInt(col, "index");
-                if (!string.IsNullOrEmpty(name) && idx < oldVals.Value.GetArrayLength())
-                    oldDict[name] = ExtractValue(oldVals.Value[idx]);
+                foreach (var col in cols.EnumerateArray())
+                {
+                    var name = GetString(col, "name");
+                    var idx = GetInt(col, "index");
+                    if (!string.IsNullOrEmpty(name) && idx < oldVals.Value.GetArrayLength())
+                        oldDict[name] = ExtractValue(oldVals.Value[idx]);
+                }
             }
-            dict["__old_columns"] = oldDict;
+            else if (oldVals.Value.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var prop in oldVals.Value.EnumerateObject())
+                    oldDict[prop.Name] = ExtractValue(prop.Value);
+            }
+            if (oldDict.Count > 0)
+                dict["__old_columns"] = oldDict;
         }
 
         // Carry operation type if present
