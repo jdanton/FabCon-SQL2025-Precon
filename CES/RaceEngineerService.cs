@@ -64,7 +64,7 @@ class RaceEngineerService : IAsyncDisposable
                 + "Get your key from https://console.anthropic.com");
 
         _http.DefaultRequestHeaders.Add("x-api-key", apiKey);
-        _http.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
+        _http.DefaultRequestHeaders.Add("anthropic-version", "2024-10-22");
 
         _serviceBusClient = new ServiceBusClient(serviceBusNamespace, credential);
         _sender = _serviceBusClient.CreateSender(queueName);
@@ -120,12 +120,8 @@ class RaceEngineerService : IAsyncDisposable
                     if (!string.IsNullOrEmpty(tire)) state.TireCompound = tire;
                     state.TireAge = GetInt(columns, "TireAge");
                     state.Lap = GetInt(columns, "Lap");
-                    var isActive = columns.TryGetProperty("IsActive", out var activeVal);
-                    if (isActive)
-                    {
-                        state.IsActive = activeVal.ValueKind == JsonValueKind.True
-                            || (activeVal.ValueKind == JsonValueKind.Number && activeVal.GetInt32() != 0);
-                    }
+                    if (columns.TryGetProperty("IsActive", out var activeVal))
+                        state.IsActive = IsTrue(activeVal);
                 }
                 break;
         }
@@ -154,9 +150,7 @@ class RaceEngineerService : IAsyncDisposable
             case "LiveTiming":
             {
                 var driverId = GetInt(columns, "DriverId");
-                var isActiveEl = columns.TryGetProperty("IsActive", out var av) ? av : (JsonElement?)null;
-                bool isActive = isActiveEl == null || isActiveEl.Value.ValueKind == JsonValueKind.True
-                    || (isActiveEl.Value.ValueKind == JsonValueKind.Number && isActiveEl.Value.GetInt32() != 0);
+                bool isActive = !columns.TryGetProperty("IsActive", out var av) || IsTrue(av);
 
                 if (!isActive && driverId > 0)
                 {
@@ -306,6 +300,19 @@ class RaceEngineerService : IAsyncDisposable
             if (val.ValueKind == JsonValueKind.String && int.TryParse(val.GetString(), out var n)) return n;
         }
         return 0;
+    }
+
+    static bool IsTrue(JsonElement val)
+    {
+        if (val.ValueKind == JsonValueKind.True) return true;
+        if (val.ValueKind == JsonValueKind.False) return false;
+        if (val.ValueKind == JsonValueKind.Number) return val.GetInt32() != 0;
+        if (val.ValueKind == JsonValueKind.String)
+        {
+            var s = val.GetString();
+            return s == "1" || string.Equals(s, "true", StringComparison.OrdinalIgnoreCase);
+        }
+        return false;
     }
 
     public async ValueTask DisposeAsync()
