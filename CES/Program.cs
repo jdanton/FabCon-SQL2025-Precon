@@ -51,10 +51,12 @@ class Program
     // ═══════════════════════════════════════════════════════════════════════
 
     static int _eventCount = 0;
+    static bool _debug = false;
     static RaceEngineerService _raceEngineer = null!;
 
     static async Task Main(string[] args)
     {
+        _debug = args.Contains("--debug");
         PrintBanner();
 
         // Use DefaultAzureCredential — picks up managed identity in Azure,
@@ -140,12 +142,15 @@ class Program
             else
                 data = dataRaw;
 
-            // DEBUG: Print eventrow and top-level CloudEvent keys
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine($"  [DEBUG] CloudEvent keys: {string.Join(", ", EnumerateKeys(cloudEvent))}");
-            if (data.TryGetProperty("eventrow", out var debugRow))
-                Console.WriteLine($"  [DEBUG] eventrow: {Truncate(debugRow.ToString(), 800)}");
-            Console.ResetColor();
+            // DEBUG: Pass --debug flag to enable payload inspection
+            if (_debug)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine($"  [DEBUG] CloudEvent keys: {string.Join(", ", EnumerateKeys(cloudEvent))}");
+                if (data.TryGetProperty("eventrow", out var debugRow))
+                    Console.WriteLine($"  [DEBUG] eventrow: {Truncate(debugRow.ToString(), 800)}");
+                Console.ResetColor();
+            }
 
             // Extract CES-specific fields from actual payload structure
             var eventsource = data.GetProperty("eventsource");
