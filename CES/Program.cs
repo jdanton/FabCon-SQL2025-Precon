@@ -251,7 +251,7 @@ class Program
             Console.Write($"Driver #{driverId} P{position}");
         }
 
-        if (!isActive)
+        if (!isActive && lap > 0)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Write(" ■ DNF");
@@ -482,21 +482,26 @@ class Program
 
         if (newVals.HasValue)
         {
-            if (newVals.Value.ValueKind == JsonValueKind.Array)
+            var val = newVals.Value;
+            // CES sends current/old as a JSON string — deserialize first
+            if (val.ValueKind == JsonValueKind.String)
+                val = JsonSerializer.Deserialize<JsonElement>(val.GetString()!);
+
+            if (val.ValueKind == JsonValueKind.Array)
             {
                 // Array of values — map by column index
                 foreach (var col in cols.EnumerateArray())
                 {
                     var name = GetString(col, "name");
                     var idx = GetInt(col, "index");
-                    if (!string.IsNullOrEmpty(name) && idx < newVals.Value.GetArrayLength())
-                        dict[name] = ExtractValue(newVals.Value[idx]);
+                    if (!string.IsNullOrEmpty(name) && idx < val.GetArrayLength())
+                        dict[name] = ExtractValue(val[idx]);
                 }
             }
-            else if (newVals.Value.ValueKind == JsonValueKind.Object)
+            else if (val.ValueKind == JsonValueKind.Object)
             {
                 // Object with named properties — read directly
-                foreach (var prop in newVals.Value.EnumerateObject())
+                foreach (var prop in val.EnumerateObject())
                     dict[prop.Name] = ExtractValue(prop.Value);
             }
         }
@@ -504,20 +509,24 @@ class Program
         // Build old_columns for UPD change detection
         if (oldVals.HasValue)
         {
+            var oldVal = oldVals.Value;
+            if (oldVal.ValueKind == JsonValueKind.String)
+                oldVal = JsonSerializer.Deserialize<JsonElement>(oldVal.GetString()!);
+
             var oldDict = new Dictionary<string, object?>();
-            if (oldVals.Value.ValueKind == JsonValueKind.Array)
+            if (oldVal.ValueKind == JsonValueKind.Array)
             {
                 foreach (var col in cols.EnumerateArray())
                 {
                     var name = GetString(col, "name");
                     var idx = GetInt(col, "index");
-                    if (!string.IsNullOrEmpty(name) && idx < oldVals.Value.GetArrayLength())
-                        oldDict[name] = ExtractValue(oldVals.Value[idx]);
+                    if (!string.IsNullOrEmpty(name) && idx < oldVal.GetArrayLength())
+                        oldDict[name] = ExtractValue(oldVal[idx]);
                 }
             }
-            else if (oldVals.Value.ValueKind == JsonValueKind.Object)
+            else if (oldVal.ValueKind == JsonValueKind.Object)
             {
-                foreach (var prop in oldVals.Value.EnumerateObject())
+                foreach (var prop in oldVal.EnumerateObject())
                     oldDict[prop.Name] = ExtractValue(prop.Value);
             }
             if (oldDict.Count > 0)
@@ -571,6 +580,11 @@ class Program
             if (val.ValueKind == JsonValueKind.True) return true;
             if (val.ValueKind == JsonValueKind.False) return false;
             if (val.ValueKind == JsonValueKind.Number) return val.GetInt32() != 0;
+            if (val.ValueKind == JsonValueKind.String)
+            {
+                var s = val.GetString();
+                return s == "1" || string.Equals(s, "true", StringComparison.OrdinalIgnoreCase);
+            }
         }
         return false;
     }
