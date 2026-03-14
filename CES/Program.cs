@@ -123,7 +123,14 @@ class Program
             // Extract CloudEvent metadata
             var source = GetString(cloudEvent, "source");
             var time = GetString(cloudEvent, "time");
-            var data = cloudEvent.GetProperty("data");
+            var dataRaw = cloudEvent.GetProperty("data");
+
+            // CES may send "data" as a JSON string or as a nested object — handle both
+            JsonElement data;
+            if (dataRaw.ValueKind == JsonValueKind.String)
+                data = JsonSerializer.Deserialize<JsonElement>(dataRaw.GetString()!);
+            else
+                data = dataRaw;
 
             // Extract CES-specific fields
             var schema = GetString(data, "schema");
