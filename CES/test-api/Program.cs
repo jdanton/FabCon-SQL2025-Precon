@@ -17,7 +17,7 @@ string[] models = [
 
 var http = new HttpClient();
 http.DefaultRequestHeaders.Add("x-api-key", apiKey);
-http.DefaultRequestHeaders.Add("anthropic-version", "2024-10-22");
+http.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
 
 foreach (var model in models)
 {

@@ -64,7 +64,7 @@ class RaceEngineerService : IAsyncDisposable
                 + "Get your key from https://console.anthropic.com");
 
         _http.DefaultRequestHeaders.Add("x-api-key", apiKey);
-        _http.DefaultRequestHeaders.Add("anthropic-version", "2024-10-22");
+        _http.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
 
         _serviceBusClient = new ServiceBusClient(serviceBusNamespace, credential);
         _sender = _serviceBusClient.CreateSender(queueName);
