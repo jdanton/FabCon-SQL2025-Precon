@@ -12,8 +12,6 @@
 using Azure.Identity;
 using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Consumer;
-using Azure.Messaging.EventHubs.Processor;
-using Azure.Storage.Blobs;
 using System.Text;
 using System.Text.Json;
 
@@ -66,72 +64,58 @@ class Program
         // Initialize the AI-powered race engineer
         _raceEngineer = new RaceEngineerService(ServiceBusNamespace, ServiceBusQueueName, credential);
 
-        // Create the blob container client for checkpoint storage
-        var blobUri = new Uri($"{BlobStorageUrl}/{BlobContainerName}");
-        var storageClient = new BlobContainerClient(blobUri, credential);
-        await storageClient.CreateIfNotExistsAsync();
-
-        // Create the Event Processor with low-latency settings
-        var processorOptions = new EventProcessorClientOptions
-        {
-            MaximumWaitTime = TimeSpan.FromMilliseconds(20),
-            PrefetchCount = 10,
-            CacheEventCount = 10
-        };
-
-        var processor = new EventProcessorClient(
-            storageClient,
-            ConsumerGroup,
-            EventHubNamespace,
-            EventHubName,
-            credential,
-            processorOptions);
-
-        // Wire up event handlers
-        processor.ProcessEventAsync += ProcessEventHandler;
-        processor.ProcessErrorAsync += ProcessErrorHandler;
-
-        // Start processing
+        // Use lightweight consumer (no blob checkpointing) for low-latency demo
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("  Connecting to Azure Event Hubs...");
         Console.ResetColor();
 
-        await processor.StartProcessingAsync();
+        await using var consumer = new EventHubConsumerClient(
+            ConsumerGroup,
+            EventHubNamespace,
+            EventHubName,
+            credential);
 
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("  CONNECTED. Listening for race events...");
         Console.WriteLine("  Run the SQL scripts in SSMS to generate events.");
-        Console.WriteLine("  Press any key to stop.\n");
+        Console.WriteLine("  Press Ctrl+C to stop.\n");
         Console.ResetColor();
 
         PrintSeparator();
 
-        // Wait for user to stop
-        Console.ReadKey(intercept: true);
+        // Read events from latest — no checkpoint overhead
+        var cts = new CancellationTokenSource();
+        Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
 
-        Console.WriteLine("\n  Stopping processor...");
-        await processor.StopProcessingAsync();
+        try
+        {
+            await foreach (var partitionEvent in consumer.ReadEventsAsync(
+                new ReadEventOptions { MaximumWaitTime = TimeSpan.FromMilliseconds(100) },
+                cts.Token))
+            {
+                if (partitionEvent.Data == null) continue;
+                await ProcessEventDirect(partitionEvent.Data);
+            }
+        }
+        catch (OperationCanceledException) { }
+
+        Console.WriteLine($"\n  Done. Processed {_eventCount} events total.");
         await _raceEngineer.DisposeAsync();
-        Console.WriteLine($"  Done. Processed {_eventCount} events total.");
     }
 
     /// <summary>
-    /// Processes each event received from the Event Hub.
-    /// Parses the CloudEvent payload and displays it as an F1 race feed.
+    /// Processes each event directly from the lightweight consumer.
     /// </summary>
-    static async Task ProcessEventHandler(ProcessEventArgs args)
+    static async Task ProcessEventDirect(EventData eventData)
     {
-        if (args.Data == null) return;
-
         Interlocked.Increment(ref _eventCount);
 
         try
         {
-            var body = Encoding.UTF8.GetString(args.Data.Body.ToArray());
+            var body = Encoding.UTF8.GetString(eventData.Body.ToArray());
             var cloudEvent = JsonSerializer.Deserialize<JsonElement>(body);
 
             // Extract CloudEvent metadata
-            var source = GetString(cloudEvent, "source");
             var time = GetString(cloudEvent, "time");
             var dataRaw = cloudEvent.GetProperty("data");
 
@@ -142,36 +126,33 @@ class Program
             else
                 data = dataRaw;
 
-            // DEBUG: Pass --debug flag to enable payload inspection
-            if (_debug)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine($"  [DEBUG] CloudEvent keys: {string.Join(", ", EnumerateKeys(cloudEvent))}");
-                if (data.TryGetProperty("eventrow", out var debugRow))
-                    Console.WriteLine($"  [DEBUG] eventrow: {Truncate(debugRow.ToString(), 800)}");
-                Console.ResetColor();
-            }
-
             // Extract CES-specific fields from actual payload structure
             var eventsource = data.GetProperty("eventsource");
             var schema = GetString(eventsource, "schema");
             var table = GetString(eventsource, "tbl");
 
-            // Operation type may be in CloudEvent type field or eventrow
-            var ceType = GetString(cloudEvent, "type");
-            var operation = "INS"; // default
-            if (data.TryGetProperty("eventrow", out var eventRow))
+            // Build named columns from CES eventrow + eventsource.cols mapping
+            var columns = BuildNamedColumns(data);
+
+            // DEBUG: dump first event or when --debug flag is set
+            if (_debug || _eventCount == 1)
             {
-                // Check if operation is in eventrow
-                var opFromRow = GetString(eventRow, "op");
-                if (!string.IsNullOrEmpty(opFromRow)) operation = opFromRow;
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                if (data.TryGetProperty("eventrow", out var debugRow))
+                    Console.WriteLine($"  [DEBUG] eventrow keys: {string.Join(", ", EnumerateKeys(debugRow))}");
+                Console.WriteLine($"  [DEBUG] built columns: {Truncate(columns.ToString(), 500)}");
+                Console.ResetColor();
             }
 
+            // Detect operation type from eventrow or CloudEvent type
+            var operation = GetString(columns, "__op");
+            if (string.IsNullOrEmpty(operation)) operation = "INS";
+
             // Format and display based on table
-            DisplayEvent(table, operation, time, data);
+            DisplayEvent(table, operation, time, columns);
 
             // Evaluate for unexpected events — triggers Claude + Service Bus if anomaly detected
-            var recommendation = await _raceEngineer.EvaluateEventAsync(table, operation, data);
+            var recommendation = await _raceEngineer.EvaluateEventAsync(table, operation, columns);
             if (recommendation != null)
                 DisplayEngineerRadio(recommendation);
         }
@@ -182,29 +163,25 @@ class Program
             Console.ResetColor();
 
             // Still display raw payload for debugging
-            var raw = Encoding.UTF8.GetString(args.Data.Body.ToArray());
+            var raw = Encoding.UTF8.GetString(eventData.Body.ToArray());
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.WriteLine($"  Raw: {Truncate(raw, 200)}");
             Console.ResetColor();
         }
-
-        // Checkpoint so we don't reprocess on restart
-        await args.UpdateCheckpointAsync();
     }
 
     /// <summary>
     /// Displays a formatted event based on its table and operation type.
     /// </summary>
-    static void DisplayEvent(string table, string operation, string time, JsonElement data)
+    static void DisplayEvent(string table, string operation, string time, JsonElement columns)
     {
         var timestamp = FormatTimestamp(time);
         var opLabel = FormatOperation(operation);
-        var columns = data.TryGetProperty("columns", out var cols) ? cols : data;
 
         switch (table)
         {
             case "LiveTiming":
-                DisplayLiveTimingEvent(timestamp, opLabel, operation, columns, data);
+                DisplayLiveTimingEvent(timestamp, opLabel, operation, columns, columns);
                 break;
 
             case "PitStops":
@@ -216,7 +193,7 @@ class Program
                 break;
 
             case "Races":
-                DisplayRaceStatusEvent(timestamp, opLabel, operation, columns, data);
+                DisplayRaceStatusEvent(timestamp, opLabel, operation, columns, columns);
                 break;
 
             case "Drivers":
@@ -467,15 +444,85 @@ class Program
         return lines;
     }
 
+    // ── CES Payload Mapping ────────────────────────────────────────────────
+
+    /// <summary>
+    /// Transforms the CES payload (eventsource.cols + eventrow) into a flat
+    /// JsonElement with named column properties that the display methods expect.
+    /// </summary>
+    static JsonElement BuildNamedColumns(JsonElement data)
+    {
+        if (!data.TryGetProperty("eventsource", out var eventsource) ||
+            !data.TryGetProperty("eventrow", out var eventrow))
+            return data;
+
+        var dict = new Dictionary<string, object?>();
+
+        // Get column definitions
+        if (eventsource.TryGetProperty("cols", out var cols) && cols.ValueKind == JsonValueKind.Array)
+        {
+            // Try to extract values from eventrow
+            // eventrow may have "newvalues"/"oldvalues" arrays, or "vals", or be an array itself
+            JsonElement? newVals = null;
+            JsonElement? oldVals = null;
+
+            if (eventrow.TryGetProperty("newvalues", out var nv))
+                newVals = nv;
+            else if (eventrow.TryGetProperty("vals", out var v))
+                newVals = v;
+            else if (eventrow.TryGetProperty("values", out var vs))
+                newVals = vs;
+            else if (eventrow.ValueKind == JsonValueKind.Array)
+                newVals = eventrow;
+
+            if (eventrow.TryGetProperty("oldvalues", out var ov))
+                oldVals = ov;
+
+            if (newVals.HasValue && newVals.Value.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var col in cols.EnumerateArray())
+                {
+                    var name = GetString(col, "name");
+                    var idx = GetInt(col, "index");
+                    if (!string.IsNullOrEmpty(name) && idx < newVals.Value.GetArrayLength())
+                        dict[name] = ExtractValue(newVals.Value[idx]);
+                }
+            }
+
+            // Also try reading eventrow as an object with named properties
+            if (!newVals.HasValue && eventrow.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var col in cols.EnumerateArray())
+                {
+                    var name = GetString(col, "name");
+                    if (!string.IsNullOrEmpty(name) && eventrow.TryGetProperty(name, out var val))
+                        dict[name] = ExtractValue(val);
+                }
+            }
+        }
+
+        // Carry operation type if present
+        if (eventrow.TryGetProperty("op", out var op))
+            dict["__op"] = op.ToString();
+
+        // Serialize back to JsonElement for the display methods
+        var json = JsonSerializer.Serialize(dict);
+        return JsonSerializer.Deserialize<JsonElement>(json);
+    }
+
+    static object? ExtractValue(JsonElement el) => el.ValueKind switch
+    {
+        JsonValueKind.String => el.GetString(),
+        JsonValueKind.Number => el.TryGetInt32(out var i) ? i : el.GetDouble(),
+        JsonValueKind.True => true,
+        JsonValueKind.False => false,
+        JsonValueKind.Null => null,
+        _ => el.ToString()
+    };
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    static Task ProcessErrorHandler(ProcessErrorEventArgs args)
-    {
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine($"\n  [ERROR] Partition: {args.PartitionId} | {args.Exception.Message}");
-        Console.ResetColor();
-        return Task.CompletedTask;
-    }
+
 
     static string GetString(JsonElement el, string prop)
     {
