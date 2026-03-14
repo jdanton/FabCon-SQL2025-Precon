@@ -90,8 +90,9 @@ class Program
         try
         {
             await foreach (var partitionEvent in consumer.ReadEventsAsync(
-                new ReadEventOptions { MaximumWaitTime = TimeSpan.FromMilliseconds(100) },
-                cts.Token))
+                startReadingAtEarliestEvent: false,
+                readOptions: new ReadEventOptions { MaximumWaitTime = TimeSpan.FromMilliseconds(100) },
+                cancellationToken: cts.Token))
             {
                 if (partitionEvent.Data == null) continue;
                 await ProcessEventDirect(partitionEvent.Data);
@@ -223,7 +224,7 @@ class Program
         Console.Write($"  {ts} ");
 
         // Show position changes for UPD events
-        if (opCode == "UPD" && data.TryGetProperty("old_columns", out var oldCols))
+        if (opCode == "UPD" && data.TryGetProperty("__old_columns", out var oldCols))
         {
             var oldPos = GetInt(oldCols, "Position");
             if (oldPos > 0 && oldPos != position)
@@ -337,7 +338,7 @@ class Program
         Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.Write($"  {ts} ");
 
-        if (opCode == "UPD" && data.TryGetProperty("old_columns", out var oldCols))
+        if (opCode == "UPD" && data.TryGetProperty("__old_columns", out var oldCols))
         {
             var oldStatus = GetString(oldCols, "RaceStatus");
 
@@ -466,16 +467,19 @@ class Program
             JsonElement? newVals = null;
             JsonElement? oldVals = null;
 
-            if (eventrow.TryGetProperty("newvalues", out var nv))
+            // CES uses "current" for new values, "old" for previous values
+            if (eventrow.TryGetProperty("current", out var cur))
+                newVals = cur;
+            else if (eventrow.TryGetProperty("newvalues", out var nv))
                 newVals = nv;
             else if (eventrow.TryGetProperty("vals", out var v))
                 newVals = v;
-            else if (eventrow.TryGetProperty("values", out var vs))
-                newVals = vs;
             else if (eventrow.ValueKind == JsonValueKind.Array)
                 newVals = eventrow;
 
-            if (eventrow.TryGetProperty("oldvalues", out var ov))
+            if (eventrow.TryGetProperty("old", out var old))
+                oldVals = old;
+            else if (eventrow.TryGetProperty("oldvalues", out var ov))
                 oldVals = ov;
 
             if (newVals.HasValue && newVals.Value.ValueKind == JsonValueKind.Array)
@@ -499,6 +503,20 @@ class Program
                         dict[name] = ExtractValue(val);
                 }
             }
+        }
+
+        // Build old_columns for UPD change detection
+        if (oldVals.HasValue && oldVals.Value.ValueKind == JsonValueKind.Array)
+        {
+            var oldDict = new Dictionary<string, object?>();
+            foreach (var col in cols.EnumerateArray())
+            {
+                var name = GetString(col, "name");
+                var idx = GetInt(col, "index");
+                if (!string.IsNullOrEmpty(name) && idx < oldVals.Value.GetArrayLength())
+                    oldDict[name] = ExtractValue(oldVals.Value[idx]);
+            }
+            dict["__old_columns"] = oldDict;
         }
 
         // Carry operation type if present
