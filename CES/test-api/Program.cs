@@ -7,25 +7,38 @@ Console.WriteLine($"API key set: {!string.IsNullOrEmpty(apiKey)}");
 Console.WriteLine($"API key length: {apiKey?.Length ?? 0}");
 Console.WriteLine($"API key prefix: {apiKey?[..Math.Min(10, apiKey.Length)]}...");
 
+// Try multiple models to find one that works
+string[] models = [
+    "claude-haiku-4-5-20251001",
+    "claude-3-5-haiku-20241022",
+    "claude-sonnet-4-5-20250514",
+    "claude-3-5-sonnet-20241022"
+];
+
 var http = new HttpClient();
 http.DefaultRequestHeaders.Add("x-api-key", apiKey);
 http.DefaultRequestHeaders.Add("anthropic-version", "2024-10-22");
 
-var body = JsonSerializer.Serialize(new
+foreach (var model in models)
 {
-    model = "claude-haiku-4-5-20251001",
-    max_tokens = 50,
-    messages = new[] { new { role = "user", content = "Say hello in 5 words." } }
-});
+    Console.WriteLine($"\n--- Trying model: {model} ---");
 
-Console.WriteLine($"\nRequest body:\n{body}\n");
+    var body = JsonSerializer.Serialize(new
+    {
+        model,
+        max_tokens = 50,
+        messages = new[] { new { role = "user", content = "Say hello in 5 words." } }
+    });
 
-var request = new HttpRequestMessage(HttpMethod.Post, "https://api.anthropic.com/v1/messages")
-{
-    Content = new StringContent(body, Encoding.UTF8, "application/json")
-};
+    var request = new HttpRequestMessage(HttpMethod.Post, "https://api.anthropic.com/v1/messages")
+    {
+        Content = new StringContent(body, Encoding.UTF8, "application/json")
+    };
 
-var response = await http.SendAsync(request);
-Console.WriteLine($"Status: {(int)response.StatusCode} {response.StatusCode}");
-var responseBody = await response.Content.ReadAsStringAsync();
-Console.WriteLine($"Response:\n{responseBody}");
+    var response = await http.SendAsync(request);
+    var responseBody = await response.Content.ReadAsStringAsync();
+    Console.WriteLine($"Status: {(int)response.StatusCode} {response.StatusCode}");
+    Console.WriteLine($"Response: {responseBody}");
+
+    if (response.IsSuccessStatusCode) break;
+}
