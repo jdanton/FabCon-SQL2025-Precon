@@ -132,6 +132,12 @@ class Program
             else
                 data = dataRaw;
 
+            // DEBUG: Print the actual payload structure to understand the CES format
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine($"  [DEBUG] data keys: {string.Join(", ", EnumerateKeys(data))}");
+            Console.WriteLine($"  [DEBUG] data: {Truncate(data.ToString(), 500)}");
+            Console.ResetColor();
+
             // Extract CES-specific fields
             var schema = GetString(data, "schema");
             var table = GetString(data, "table");
@@ -507,6 +513,13 @@ class Program
         "Wet" => "[W]",
         _ => "[?]"
     };
+
+    static IEnumerable<string> EnumerateKeys(JsonElement el)
+    {
+        if (el.ValueKind == JsonValueKind.Object)
+            foreach (var prop in el.EnumerateObject())
+                yield return prop.Name;
+    }
 
     static string Truncate(string s, int max) =>
         s.Length <= max ? s : s[..max] + "...";
