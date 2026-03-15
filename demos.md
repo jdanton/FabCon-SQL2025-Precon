@@ -15,7 +15,7 @@ Detailed walkthrough for each demo in the full-day training session. Demos are l
 | 6 | Managed Identity & Security | 4 - Security | sql2025book | ~10 min |  Laptop-Azure Portal
 | 7 | Optimized Locking | 5 - Performance | sql2025book + demos | ~3 min | SQL1-Joey
 | 8 | Tempdb Resource Governance | 5 - Performance | sql2025book + demos | ~5 min |SQL1-Joey
-| 9 | ABORT_QUERY_EXECUTION | 5 - Performance | demos | ~2 min |SQL1-oey 
+| 9 | ABORT_QUERY_EXECUTION | 5 - Performance | demos | ~2 min |SQL1-Joey 
 | 10 | AG Reliability & Diagnostics | 6 - Availability | sql2025book | ~10 min | Matt-Azure
 | 11 | AG Tuning | 6 - Availability | sql2025book | ~5 min |Matt-Azure
 | 12 | Azure Arc Integration | 7 - Arc | sql2025book | ~10 min |Joey Surface
