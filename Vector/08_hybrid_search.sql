@@ -79,7 +79,7 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @h3) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
-WHERE r.Winner = 'Hamilton'
+WHERE r.Winner = 'Lewis Hamilton'
   AND r.RecapEmbedding IS NOT NULL
 ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @h3);
 GO
