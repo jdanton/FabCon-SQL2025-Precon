@@ -10,13 +10,13 @@
 USE F1RaceOps;
 GO
 
-
 -- ═══════════════════════════════════════════════════════════════════════════
 -- SECTION 1: LIGHTS OUT — Race Start (Formation Lap / Lap 0)
 -- This generates 20 INSERT events into LiveTiming — one per driver.
 -- The consumer should show a burst of INS events for dbo.LiveTiming.
 -- Also updates the Race status from 'Scheduled' to 'Green'.
 -- ═══════════════════════════════════════════════════════════════════════════
+
 
 -- Race goes green
 UPDATE dbo.Races SET RaceStatus = 'Green' WHERE RaceId = 1;
@@ -100,28 +100,28 @@ GO
 -- Norris pits first (lap 18) — soft to hard
 INSERT INTO dbo.PitStops (RaceId, DriverId, Lap, StopNumber, PitStopDurationMs, TireCompoundIn, TireCompoundOut, Notes)
 VALUES (1, 3, 18, 1, 2456, 'Soft', 'Hard', 'Clean stop. Undercut attempt on HAM.');
-
+GO
 INSERT INTO dbo.LiveTiming (RaceId, DriverId, Lap, Position, Sector1Ms, Sector2Ms, Sector3Ms, LapTimeMs, GapToLeaderMs, TireCompound, TireAge, InPit, DRS)
 VALUES (1, 3, 18, 10, 19102, 33445, 28901, 81448, 12340, 'Hard', 0, 1, 0);  -- NOR in pit, drops to P10
-
+GO
 -- Hamilton pits (lap 20) — soft to medium
 INSERT INTO dbo.PitStops (RaceId, DriverId, Lap, StopNumber, PitStopDurationMs, TireCompoundIn, TireCompoundOut, Notes)
 VALUES (1, 5, 20, 1, 2312, 'Soft', 'Medium', 'Covering Norris. Good stop by Ferrari.');
-
+GO
 INSERT INTO dbo.LiveTiming (RaceId, DriverId, Lap, Position, Sector1Ms, Sector2Ms, Sector3Ms, LapTimeMs, GapToLeaderMs, TireCompound, TireAge, InPit, DRS)
 VALUES (1, 5, 20, 8, 19067, 33401, 29112, 81580, 15670, 'Medium', 0, 1, 0);  -- HAM drops to P8
-
+GO
 -- Leclerc pits (lap 22) — soft to hard, comes out ahead of Hamilton!
 INSERT INTO dbo.PitStops (RaceId, DriverId, Lap, StopNumber, PitStopDurationMs, TireCompoundIn, TireCompoundOut, Notes)
 VALUES (1, 6, 22, 1, 2198, 'Soft', 'Hard', 'GREAT stop! 2.1 seconds. Leclerc retains lead after stops.');
-
+GO
 INSERT INTO dbo.LiveTiming (RaceId, DriverId, Lap, Position, Sector1Ms, Sector2Ms, Sector3Ms, LapTimeMs, GapToLeaderMs, TireCompound, TireAge, InPit, DRS)
 VALUES (1, 6, 22, 1, 18945, 33112, 28456, 80513, 0, 'Hard', 0, 1, 0);  -- LEC still P1 after stop!
-
+GO
 -- Verstappen stays out! (has not pitted — extending medium stint)
 INSERT INTO dbo.LiveTiming (RaceId, DriverId, Lap, Position, Sector1Ms, Sector2Ms, Sector3Ms, LapTimeMs, GapToLeaderMs, TireCompound, TireAge, DRS)
 VALUES (1, 1, 22, 1, 18834, 33089, 19912, 71835, 0, 'Medium', 22, 0);  -- VER leads on track!
-
+GO
 -- Race control notes Verstappen leading on track (but LEC leads on adjusted time)
 INSERT INTO dbo.RaceControl (RaceId, Lap, MessageType, Category, Description)
 VALUES (1, 22, 'Flag', 'Informational', 'Verstappen (VER) leads on track. Has not pitted. Leclerc (LEC) leads on adjusted strategy.');
@@ -142,22 +142,22 @@ GO
 INSERT INTO dbo.RaceControl (RaceId, Lap, MessageType, Category, DriverId, Description)
 VALUES (1, 30, 'Flag', 'Safety', 10,
         'Car 18 (STR) crashed at Swimming Pool chicane. Car in barriers. Driver OK.');
-
+GO
 -- Safety car deployed
 INSERT INTO dbo.RaceControl (RaceId, Lap, MessageType, Category, Description)
 VALUES (1, 30, 'SafetyCar', 'Safety', 'SAFETY CAR DEPLOYED');
-
+GO
 -- DRS disabled
 INSERT INTO dbo.RaceControl (RaceId, Lap, MessageType, Category, Description)
 VALUES (1, 30, 'DRSDisabled', 'Procedural', 'DRS disabled');
-
+GO
 -- Update race status
 UPDATE dbo.Races SET RaceStatus = 'SafetyCar' WHERE RaceId = 1;
-
+GO
 -- Stroll retires
 INSERT INTO dbo.LiveTiming (RaceId, DriverId, Lap, Position, TireCompound, TireAge, IsActive)
 VALUES (1, 10, 30, 20, 'Hard', 30, 0);  -- STR DNF
-
+GO
 -- Verstappen dives into the pits under Safety Car — FREE stop!
 INSERT INTO dbo.PitStops (RaceId, DriverId, Lap, StopNumber, PitStopDurationMs, TireCompoundIn, TireCompoundOut, Notes)
 VALUES (1, 1, 30, 1, 2567, 'Medium', 'Soft', 'Pits under Safety Car. Free stop! Fresh softs for the restart.');
