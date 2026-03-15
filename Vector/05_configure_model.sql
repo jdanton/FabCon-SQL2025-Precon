@@ -21,11 +21,11 @@ GO
 
 CREATE EXTERNAL MODEL OllamaEmbedding
     WITH (
-        MODEL_TYPE = EMBEDDINGS,
-        API_TYPE = OLLAMA,
-        LOCATION = 'http://localhost:11434',
-        MODEL = 'nomic-embed-text'
-    );
+    LOCATION = 'https://model-web:443/api/embed',
+    API_FORMAT = 'Ollama',
+    MODEL_TYPE = EMBEDDINGS,
+    MODEL = 'nomic-embed-text'
+);
 GO
 
 PRINT 'External model OllamaEmbedding created (nomic-embed-text via Ollama).';
@@ -34,7 +34,7 @@ GO
 -- ── Step 2: Verify the model is accessible ────────────────────────────────
 -- Generate a test embedding to confirm connectivity.
 
-SELECT AI_GENERATE_EMBEDDINGS(N'This is a test of the Ollama embedding model.', 'OllamaEmbedding')
+SELECT AI_GENERATE_EMBEDDINGS(N'test text' USE MODEL OllamaEmbedding) AS GeneratedEmbedding;
     AS TestEmbedding;
 GO
 

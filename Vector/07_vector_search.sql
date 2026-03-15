@@ -32,8 +32,8 @@ GO
 
 -- Method A: KNN with VECTOR_DISTANCE (exact search — scans all rows)
 DECLARE @q1 VECTOR(768) = AI_GENERATE_EMBEDDINGS(
-    N'Find races where rain completely changed the outcome',
-    'OllamaEmbedding'
+    N'Find races where rain completely changed the outcome'
+    USE MODEL OllamaEmbedding
 );
 
 SELECT TOP 5
@@ -44,25 +44,26 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q1) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
-ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q1);
+ORDER BY Distance;
 GO
 
--- Method B: ANN with VECTOR_SEARCH (uses DiskANN index — much faster)
+-- Method B: ANN with DiskANN index (automatic — same syntax, faster execution)
+-- When a DiskANN index exists on the column, SQL Server uses it automatically
+-- for approximate nearest neighbor search via VECTOR_DISTANCE + ORDER BY.
 DECLARE @q1b VECTOR(768) = AI_GENERATE_EMBEDDINGS(
-    N'Find races where rain completely changed the outcome',
-    'OllamaEmbedding'
+    N'Find races where rain completely changed the outcome'
+    USE MODEL OllamaEmbedding
 );
 
-SELECT
-    vs.Year,
-    vs.RaceName,
-    vs.Winner,
-    vs.Weather,
-    vs.distance AS Distance,
-    LEFT(vs.Recap, 150) AS RecapPreview
-FROM VECTOR_SEARCH(
-    RaceRecaps, RecapEmbedding, @q1b, 'cosine', 5
-) AS vs;
+SELECT TOP 5
+    r.Year,
+    r.RaceName,
+    r.Winner,
+    r.Weather,
+    VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q1b) AS Distance,
+    LEFT(r.Recap, 150) AS RecapPreview
+FROM dbo.RaceRecaps r
+ORDER BY Distance;
 GO
 
 
@@ -73,8 +74,8 @@ GO
 -- Vector search: finds Button Canada 2011, Perez Sakhir 2020, etc.
 
 DECLARE @q2 VECTOR(768) = AI_GENERATE_EMBEDDINGS(
-    N'Find races with an incredible comeback from the back of the grid',
-    'OllamaEmbedding'
+    N'Find races with an incredible comeback from the back of the grid'
+    USE MODEL OllamaEmbedding
 );
 
 SELECT TOP 5
@@ -84,7 +85,7 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q2) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
-ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q2);
+ORDER BY Distance;
 GO
 
 
@@ -95,8 +96,8 @@ GO
 -- Vector search: finds Brazil 2008 (Massa), Abu Dhabi 2010, etc.
 
 DECLARE @q3 VECTOR(768) = AI_GENERATE_EMBEDDINGS(
-    N'Find races with a heartbreaking championship defeat on the final race',
-    'OllamaEmbedding'
+    N'Find races with a heartbreaking championship defeat on the final race'
+    USE MODEL OllamaEmbedding
 );
 
 SELECT TOP 5
@@ -107,7 +108,7 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q3) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
-ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q3);
+ORDER BY Distance;
 GO
 
 
@@ -118,8 +119,8 @@ GO
 -- Vector search: finds Grosjean 2020, Lauda 1976, Zhou 2022, etc.
 
 DECLARE @q4 VECTOR(768) = AI_GENERATE_EMBEDDINGS(
-    N'Find races where a driver survived a terrifying crash',
-    'OllamaEmbedding'
+    N'Find races where a driver survived a terrifying crash'
+    USE MODEL OllamaEmbedding
 );
 
 SELECT TOP 5
@@ -130,7 +131,7 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q4) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
-ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q4);
+ORDER BY Distance;
 GO
 
 
@@ -141,8 +142,8 @@ GO
 -- Vector search: finds Abu Dhabi 2021, Silverstone 2021, Suzuka 1989, etc.
 
 DECLARE @q5 VECTOR(768) = AI_GENERATE_EMBEDDINGS(
-    N'Find controversial decisions that decided a championship',
-    'OllamaEmbedding'
+    N'Find controversial decisions that decided a championship'
+    USE MODEL OllamaEmbedding
 );
 
 SELECT TOP 5
@@ -153,7 +154,7 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q5) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
-ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q5);
+ORDER BY Distance;
 GO
 
 
@@ -163,8 +164,8 @@ GO
 -- Change the text below to any natural language question.
 
 DECLARE @custom VECTOR(768) = AI_GENERATE_EMBEDDINGS(
-    N'a race where a first-time winner shocked the world',
-    'OllamaEmbedding'
+    N'a race where a first-time winner shocked the world'
+    USE MODEL OllamaEmbedding
 );
 
 SELECT TOP 5
@@ -174,7 +175,7 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @custom) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
-ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @custom);
+ORDER BY Distance;
 GO
 
 

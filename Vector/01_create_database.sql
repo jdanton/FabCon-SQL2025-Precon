@@ -17,8 +17,8 @@ GO
 USE VectorF1;
 GO
 
--- Enable preview features (required for DiskANN index and vector functions)
-EXEC sp_db_option_override_preview 'VectorF1', 'PREVIEW_FEATURES', 'ON';
+ALTER DATABASE SCOPED CONFIGURATION
+SET PREVIEW_FEATURES = ON;
 GO
 
 PRINT 'Preview features enabled on VectorF1.';
