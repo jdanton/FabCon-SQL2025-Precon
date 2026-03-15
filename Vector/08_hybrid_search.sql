@@ -32,6 +32,7 @@ SELECT TOP 5
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
 WHERE r.Year BETWEEN 2015 AND 2024
+  AND r.RecapEmbedding IS NOT NULL
 ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @h1);
 GO
 
@@ -55,6 +56,7 @@ SELECT TOP 5
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
 WHERE r.ChampionshipDecider = 1
+  AND r.RecapEmbedding IS NOT NULL
 ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @h2);
 GO
 
@@ -78,6 +80,7 @@ SELECT TOP 5
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
 WHERE r.Winner = 'Hamilton'
+  AND r.RecapEmbedding IS NOT NULL
 ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @h3);
 GO
 
@@ -102,6 +105,7 @@ SELECT TOP 5
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
 WHERE r.SafetyCar = 1
+  AND r.RecapEmbedding IS NOT NULL
 ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @h4);
 GO
 
@@ -128,6 +132,7 @@ SELECT TOP 5
 FROM dbo.RaceRecaps r
     INNER JOIN dbo.Circuits c ON r.CircuitId = c.CircuitId
 WHERE c.CircuitType = 'Street'
+  AND r.RecapEmbedding IS NOT NULL
 ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @h5);
 GO
 
@@ -153,6 +158,7 @@ SELECT TOP 5
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
 WHERE NOT (r.Year = 2021 AND r.RaceName = 'Abu Dhabi Grand Prix')  -- Exclude the source
+  AND r.RecapEmbedding IS NOT NULL
 ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @sourceEmbedding);
 GO
 
@@ -176,6 +182,7 @@ SELECT TOP 5
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
 WHERE NOT (r.Year = 2008 AND r.RaceName = 'Brazilian Grand Prix')
+  AND r.RecapEmbedding IS NOT NULL
 ORDER BY VECTOR_DISTANCE('cosine', r.RecapEmbedding, @brazilEmbedding);
 GO
 

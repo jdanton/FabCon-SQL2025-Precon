@@ -44,6 +44,7 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q1) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
+WHERE r.RecapEmbedding IS NOT NULL
 ORDER BY Distance;
 GO
 
@@ -63,6 +64,7 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q1b) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
+WHERE r.RecapEmbedding IS NOT NULL
 ORDER BY Distance;
 GO
 
@@ -85,6 +87,7 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q2) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
+WHERE r.RecapEmbedding IS NOT NULL
 ORDER BY Distance;
 GO
 
@@ -108,6 +111,7 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q3) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
+WHERE r.RecapEmbedding IS NOT NULL
 ORDER BY Distance;
 GO
 
@@ -131,6 +135,7 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q4) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
+WHERE r.RecapEmbedding IS NOT NULL
 ORDER BY Distance;
 GO
 
@@ -154,6 +159,7 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @q5) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
+WHERE r.RecapEmbedding IS NOT NULL
 ORDER BY Distance;
 GO
 
@@ -175,6 +181,7 @@ SELECT TOP 5
     VECTOR_DISTANCE('cosine', r.RecapEmbedding, @custom) AS Distance,
     LEFT(r.Recap, 150) AS RecapPreview
 FROM dbo.RaceRecaps r
+WHERE r.RecapEmbedding IS NOT NULL
 ORDER BY Distance;
 GO
 
