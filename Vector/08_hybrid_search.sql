@@ -19,8 +19,8 @@ GO
 -- ═══════════════════════════════════════════════════════════════════════════
 
 DECLARE @h1 VECTOR(768) = AI_GENERATE_EMBEDDINGS(
-    N'Rain chaos that completely changed the race',
-    'OllamaEmbedding'
+    N'Rain chaos that completely changed the race'
+    USE MODEL OllamaEmbedding
 );
 
 SELECT TOP 5
@@ -42,8 +42,8 @@ GO
 -- ═══════════════════════════════════════════════════════════════════════════
 
 DECLARE @h2 VECTOR(768) = AI_GENERATE_EMBEDDINGS(
-    N'An intense championship battle decided on the final lap',
-    'OllamaEmbedding'
+    N'An intense championship battle decided on the final lap'
+    USE MODEL OllamaEmbedding
 );
 
 SELECT TOP 5
@@ -65,8 +65,8 @@ GO
 -- ═══════════════════════════════════════════════════════════════════════════
 
 DECLARE @h3 VECTOR(768) = AI_GENERATE_EMBEDDINGS(
-    N'An incredible comeback drive from the back of the grid to victory',
-    'OllamaEmbedding'
+    N'An incredible comeback drive from the back of the grid to victory'
+    USE MODEL OllamaEmbedding
 );
 
 SELECT TOP 5
@@ -88,8 +88,8 @@ GO
 -- ═══════════════════════════════════════════════════════════════════════════
 
 DECLARE @h4 VECTOR(768) = AI_GENERATE_EMBEDDINGS(
-    N'A dramatic safety car that completely reshuffled the race order',
-    'OllamaEmbedding'
+    N'A dramatic safety car that completely reshuffled the race order'
+    USE MODEL OllamaEmbedding
 );
 
 SELECT TOP 5
@@ -112,8 +112,8 @@ GO
 -- ═══════════════════════════════════════════════════════════════════════════
 
 DECLARE @h5 VECTOR(768) = AI_GENERATE_EMBEDDINGS(
-    N'Dramatic racing on a tight street circuit with crashes and overtakes',
-    'OllamaEmbedding'
+    N'Dramatic racing on a tight street circuit with crashes and overtakes'
+    USE MODEL OllamaEmbedding
 );
 
 SELECT TOP 5
