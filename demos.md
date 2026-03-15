@@ -2,6 +2,26 @@
 
 Detailed walkthrough for each demo in the full-day training session. Demos are listed in presentation order.
 
+
+## DEMO TIMING SUMMARY
+
+| # | Demo | Module | Source | Time | Machine
+|---|------|--------|--------|------|----------|
+| 1 | Native JSON | 2 - Developers | sql2025book | ~10 min | SQL1-Joey
+| 2 | T-SQL Enhancements | 2 - Developers | sql2025book | ~5 min | SQL1-Joey
+| 3 | GitHub Copilot for SQL | 2 - Developers | VS Code / SSMS 22 | ~2 min | Matt-Azure
+| 4 | CES — F1 Race Operations | 2 - Developers | This repo (`CES/`) | ~15 min | SQL1-Joey
+| 5 | Intelligent Search (Vectors) | 3 - AI Built-In | sql2025book + demos | ~15-20 min | Joey MacBook Pro
+| 6 | Managed Identity & Security | 4 - Security | sql2025book | ~10 min | 
+| 7 | Optimized Locking | 5 - Performance | sql2025book + demos | ~3 min |
+| 8 | Tempdb Resource Governance | 5 - Performance | sql2025book + demos | ~5 min |SQL1-Joey
+| 9 | ABORT_QUERY_EXECUTION | 5 - Performance | demos | ~2 min |SQL1-oey 
+| 10 | AG Reliability & Diagnostics | 6 - Availability | sql2025book | ~10 min | Matt-Azure
+| 11 | AG Tuning | 6 - Availability | sql2025book | ~5 min |Matt-Azure
+| 12 | Azure Arc Integration | 7 - Arc | sql2025book | ~10 min |Joey Surface
+| | **Total demo time** | | | **~90-100 min** |
+
+
 ---
 
 ## MODULE 2: DEVELOPERS
@@ -132,10 +152,9 @@ Detailed walkthrough for each demo in the full-day training session. Demos are l
 - **Time:** ~10 min
 
 **Walkthrough:**
-1. Show Managed Identity configuration via Arc
-2. Demonstrate passwordless authentication for inbound connections
-3. Show outbound Managed Identity for backup to URL
-4. Demonstrate Managed Identity for AI model access (ties back to Module 3)
+
+1. Managed Identity Demo in Azure Portal
+2. Show outbound Managed Identity for backup to URL
 
 **Talking point:** Managed Identity eliminates credential management and reduces attack surface — no passwords to rotate or leak.
 
@@ -230,20 +249,4 @@ Detailed walkthrough for each demo in the full-day training session. Demos are l
 
 ---
 
-## APPENDIX: DEMO TIMING SUMMARY
 
-| # | Demo | Module | Source | Time |
-|---|------|--------|--------|------|
-| 1 | Native JSON | 2 - Developers | sql2025book | ~10 min |
-| 2 | T-SQL Enhancements | 2 - Developers | sql2025book | ~5 min |
-| 3 | GitHub Copilot for SQL | 2 - Developers | VS Code / SSMS 22 | ~2 min |
-| 4 | CES — F1 Race Operations | 2 - Developers | This repo (`CES/`) | ~15 min |
-| 5 | Intelligent Search (Vectors) | 3 - AI Built-In | sql2025book + demos | ~15-20 min |
-| 6 | Managed Identity & Security | 4 - Security | sql2025book | ~10 min |
-| 7 | Optimized Locking | 5 - Performance | sql2025book + demos | ~3 min |
-| 8 | Tempdb Resource Governance | 5 - Performance | sql2025book + demos | ~5 min |
-| 9 | ABORT_QUERY_EXECUTION | 5 - Performance | demos | ~2 min |
-| 10 | AG Reliability & Diagnostics | 6 - Availability | sql2025book | ~10 min |
-| 11 | AG Tuning | 6 - Availability | sql2025book | ~5 min |
-| 12 | Azure Arc Integration | 7 - Arc | sql2025book | ~10 min |
-| | **Total demo time** | | | **~90-100 min** |
