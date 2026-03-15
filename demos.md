@@ -12,8 +12,8 @@ Detailed walkthrough for each demo in the full-day training session. Demos are l
 | 3 | GitHub Copilot for SQL | 2 - Developers | VS Code / SSMS 22 | ~2 min | Matt-Azure
 | 4 | CES — F1 Race Operations | 2 - Developers | This repo (`CES/`) | ~15 min | SQL1-Joey
 | 5 | Intelligent Search (Vectors) | 3 - AI Built-In | sql2025book + demos | ~15-20 min | Joey MacBook Pro
-| 6 | Managed Identity & Security | 4 - Security | sql2025book | ~10 min | 
-| 7 | Optimized Locking | 5 - Performance | sql2025book + demos | ~3 min |
+| 6 | Managed Identity & Security | 4 - Security | sql2025book | ~10 min |  Laptop-Azure Portal
+| 7 | Optimized Locking | 5 - Performance | sql2025book + demos | ~3 min | SQL1-Joey
 | 8 | Tempdb Resource Governance | 5 - Performance | sql2025book + demos | ~5 min |SQL1-Joey
 | 9 | ABORT_QUERY_EXECUTION | 5 - Performance | demos | ~2 min |SQL1-oey 
 | 10 | AG Reliability & Diagnostics | 6 - Availability | sql2025book | ~10 min | Matt-Azure
