@@ -1,29 +1,53 @@
 USE hr;
 GO
-
 INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
-VALUES ('LeBron James', 'lebron.james@basketball.com', '(234) 567-8901');
+VALUES ('Lando Norris', 'lando.norris@mclaren.com', '(234) 567-8901');
 INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
-VALUES ('Serena Williams', 'serena.williams@tennis.org', '(345) 678-9012');
+VALUES ('Oscar Piastri', 'oscar.piastri@mclaren.com', '(345) 678-9012');
 INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
-VALUES ('Lionel Messi', 'lionel.messi@soccer.net', '(456) 789-0123');
+VALUES ('Charles Leclerc', 'charles.leclerc@ferrari.com', '(456) 789-0123');
 INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
-VALUES ('Tom Brady', 'tom.brady@football.co', '(567) 890-1234');
+VALUES ('Lewis Hamilton', 'lewis.hamilton@ferrari.com', '(567) 890-1234');
 INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
-VALUES ('Roger Federer', 'roger.federer@tennis.com', '(678) 901-2345');
+VALUES ('Max Verstappen', 'max.verstappen@redbullracing.com', '(678) 901-2345');
 INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
-VALUES ('Simone Biles', 'simone.biles@gymnastics.org', '(789) 012-3456');
+VALUES ('Yuki Tsunoda', 'yuki.tsunoda@redbullracing.com', '(789) 012-3456');
 INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
-VALUES ('Cristiano Ronaldo', 'cristiano.ronaldo@soccer.co', '(890) 123-4567');
+VALUES ('George Russell', 'george.russell@mercedesamgf1.com', '(890) 123-4567');
 INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
-VALUES ('Michael Phelps', 'michael.phelps@swimming.net', '(901) 234-5678');
+VALUES ('Kimi Antonelli', 'kimi.antonelli@mercedesamgf1.com', '(901) 234-5678');
 INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
-VALUES ('Usain Bolt', 'usain.bolt@track.com', '(212) 345-6789');
+VALUES ('Fernando Alonso', 'fernando.alonso@astonmartinf1.com', '(212) 345-6789');
+INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
+VALUES ('Lance Stroll', 'lance.stroll@astonmartinf1.com', '(312) 456-7890');
+INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
+VALUES ('Pierre Gasly', 'pierre.gasly@alpinef1.com', '(412) 567-8901');
+INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
+VALUES ('Franco Colapinto', 'franco.colapinto@alpinef1.com', '(512) 678-9012');
+INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
+VALUES ('Oliver Bearman', 'oliver.bearman@haasf1team.com', '(612) 789-0123');
+INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
+VALUES ('Esteban Ocon', 'esteban.ocon@haasf1team.com', '(713) 890-1234');
+INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
+VALUES ('Liam Lawson', 'liam.lawson@visacashapprb.com', '(813) 901-2345');
+INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
+VALUES ('Isack Hadjar', 'isack.hadjar@visacashapprb.com', '(913) 012-3456');
+INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
+VALUES ('Alex Albon', 'alex.albon@williamsf1.com', '(214) 123-4567');
+INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
+VALUES ('Carlos Sainz', 'carlos.sainz@williamsf1.com', '(314) 234-5678');
+INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
+VALUES ('Nico Hulkenberg', 'nico.hulkenberg@sauber-group.com', '(414) 345-6789');
+INSERT INTO EMPLOYEES ([Name], Email, PhoneNumber)
+VALUES ('Gabriel Bortoleto', 'gabriel.bortoleto@sauber-group.com', '(514) 456-7890');
 GO
 
--- Find emails that end with .org and whose local-part contains a dot followed by a token that begins with will and continues with letters only for at least 3 more characters.
--- (This distinguishes williams from, say, will9 or will__ and uses a variable-length, letters-only rule that LIKE can’t express cleanly.)
+-- Find emails whose local-part contains a dot followed by a token
+-- that begins with "al" and continues with lowercase letters only
+-- for at least 3 more characters, at a .com domain.
+-- (Matches alonso and albon but would exclude short tokens like "al9"
+-- or "al__" — a variable-length, letters-only rule LIKE can't express.)
 SELECT [Name], Email
 FROM dbo.EMPLOYEES
-WHERE REGEXP_LIKE(LOWER(Email), '^[^@]*\.will[a-z]{3,}@[a-z0-9.-]+\.org$');
+WHERE REGEXP_LIKE(LOWER(Email), '^[^@]*\.al[a-z]{3,}@[a-z0-9.-]+\.com$');
 GO
