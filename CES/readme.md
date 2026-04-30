@@ -39,8 +39,8 @@ vm_resource_id = "/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.C
 
 ```bash
 terraform init
-tf plan
-tf apply
+terraform plan
+terraform apply
 ```
 
 Type `yes` when prompted.
@@ -53,7 +53,7 @@ After apply, Terraform outputs values required by:
 Get outputs:
 
 ```bash
-tf output
+terraform output
 ```
 
 Key outputs:
@@ -77,5 +77,5 @@ Key outputs:
 ### 6) Destroy infrastructure (optional cleanup)
 
 ```bash
-tf destroy
+terraform destroy
 ```
