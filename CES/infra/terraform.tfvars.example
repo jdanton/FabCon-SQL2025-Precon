@@ -3,7 +3,22 @@
 prefix   = "f1ces"
 location = "eastus"
 
-# Full resource ID of your Azure VM running SQL Server 2025.
-# Find it in Azure Portal → VM → Properties → Resource ID, or run:
-#   az vm show -g <resource-group> -n <vm-name> --query id -o tsv
-vm_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/my-rg/providers/Microsoft.Compute/virtualMachines/my-sql-vm"
+# ── SQL Server 2025 VM ──────────────────────────────────────────────────────
+# A Windows Server 2025 VM with SQL Server 2025 Developer edition is created
+# for you (Marketplace image MicrosoftSQLServer:sql2025-ws2025:entdev-gen2).
+
+vm_size        = "Standard_D4s_v5"
+admin_username = "sqladmin"
+
+# Leave admin_password unset to auto-generate a strong password.
+# Retrieve it after apply with: terraform output -raw vm_admin_password
+# admin_password = "ChangeMe-Str0ng!Passw0rd"
+
+# ── Network access ──────────────────────────────────────────────────────────
+# SECURITY: defaults to "*" (open to the internet). Set to your public IP to
+# restrict RDP (3389) and SQL (1433). Find your IP: https://ifconfig.me
+# allowed_source_ip = "203.0.113.4/32"
+
+# ── SQL Server connectivity ─────────────────────────────────────────────────
+sql_connectivity_type = "PRIVATE"
+sql_port              = 1433

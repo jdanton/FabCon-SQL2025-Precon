@@ -6,7 +6,7 @@
 #     and send race engineer alerts
 
 locals {
-  vm_principal_id = data.azurerm_virtual_machine.sql_vm.identity[0].principal_id
+  vm_principal_id = azurerm_windows_virtual_machine.sql.identity[0].principal_id
 }
 
 # SQL Server CES → Event Hubs (send events)

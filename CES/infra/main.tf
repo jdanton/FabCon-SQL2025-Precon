@@ -10,6 +10,10 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.0"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.9"
+    }
   }
 }
 
@@ -31,9 +35,19 @@ resource "random_integer" "suffix" {
   max = 9999
 }
 
-# ── Data source: look up the VM's system-assigned managed identity ──────────
+# ── Auto-generated VM administrator password ────────────────────────────────
+# Used when var.admin_password is not supplied. Meets Azure Windows complexity
+# rules (12-72 chars, 3 of 4 character classes).
 
-data "azurerm_virtual_machine" "sql_vm" {
-  name                = split("/", var.vm_resource_id)[8]
-  resource_group_name = split("/", var.vm_resource_id)[4]
+resource "random_password" "vm_admin" {
+  length           = 24
+  min_upper        = 2
+  min_lower        = 2
+  min_numeric      = 2
+  min_special      = 2
+  override_special = "!#$%*()-_=+"
+}
+
+locals {
+  admin_password = coalesce(var.admin_password, random_password.vm_admin.result)
 }
