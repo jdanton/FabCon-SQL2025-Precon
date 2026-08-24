@@ -514,19 +514,26 @@
 
 ### Slide 67: Optimized Locking — Benefits
 - Dramatically improved concurrency for update-heavy workloads
-- Reduced lock memory overhead
+- Far smaller lock footprint — 4,001 row locks collapse to a single TID lock
 - Eliminated lock escalation blocking scenarios
+- Unrelated single-row updates no longer wait on a bulk update (~22s → ~25ms)
 - Simpler troubleshooting — fewer locking-related issues
 
 > **🔬 DEMO: Improving Application Concurrency with Optimized Locking**
 > - Repo: `sql2025book` — Core Engine chapter demos
 > - Supplemental: `demos/sqlserver2025/optimizedlocking`
+> - Scripts: `ch7 - Core Engine/optimized_locking/` (see its `readme.md`)
 > - Walkthrough:
->   - Show traditional locking behavior with concurrent updates
->   - Enable optimized locking
->   - Re-run the same workload — observe eliminated lock escalation
->   - Show reduced lock memory consumption via DMVs
->   - Monitor TID locking in action
+>   - Act 1, one window: run `02_lock_footprint.sql` — same UPDATE, optimized
+>     locking OFF vs ON, printed side by side
+>   - Show the lock counts collapse: **4,180 → 3**
+>   - Show the 10,000-row case escalate to a table `X` lock with the feature off,
+>     and never escalate with it on
+>   - Act 2, two windows: `03_blocker.sql` + `04_victim.sql` — an unrelated
+>     single-row update waits **~22,000 ms** with it off, **~25 ms** with it on
+>   - Monitor TID locking in action via `05_observe.sql`
+> - Do **not** promise reduced lock memory — it doesn't move in a short demo
+>   (pre-allocated lock blocks; measured 2,608 KB in both modes)
 > - **Talking point:** "Developers need better concurrency and don't want to worry about locking internals"
 > - ~3 min demo
 

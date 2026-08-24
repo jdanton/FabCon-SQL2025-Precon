@@ -35,7 +35,7 @@ GO
 -- Generate a test embedding to confirm connectivity.
 
 SELECT AI_GENERATE_EMBEDDINGS(N'test text' USE MODEL OllamaEmbedding) AS GeneratedEmbedding;
-    AS TestEmbedding;
+  
 GO
 
 PRINT 'Model verified — embedding generation is working.';

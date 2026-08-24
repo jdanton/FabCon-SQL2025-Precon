@@ -1,4 +1,4 @@
-USE [AdventureWorks];
+USE [AdventureWorks2025];
 GO
 WITH LargeDataSet AS (
     SELECT 

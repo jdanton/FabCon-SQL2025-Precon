@@ -19,6 +19,10 @@ terraform {
 
 provider "azurerm" {
   features {}
+
+  # Pin the target subscription so the deploy can never drift to whichever
+  # subscription the Azure CLI happens to have selected.
+  subscription_id = var.subscription_id
 }
 
 # ── Resource Group ──────────────────────────────────────────────────────────

@@ -36,7 +36,7 @@ DECLARE @q1 VECTOR(768) = AI_GENERATE_EMBEDDINGS(
     USE MODEL OllamaEmbedding
 );
 
-SELECT TOP 5
+SELECT -- TOP 5
     r.Year,
     r.RaceName,
     r.Winner,

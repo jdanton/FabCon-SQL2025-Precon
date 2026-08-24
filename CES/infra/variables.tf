@@ -1,3 +1,9 @@
+variable "subscription_id" {
+  description = "Azure subscription to deploy into. Defaults to the Contoso Ltd demo subscription."
+  type        = string
+  default     = "424d0f78-5980-4d31-98ec-624616db8e74"
+}
+
 variable "prefix" {
   description = "Naming prefix for all resources (e.g., f1ces)"
   type        = string

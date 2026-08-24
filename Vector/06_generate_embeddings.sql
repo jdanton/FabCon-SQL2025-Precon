@@ -18,7 +18,7 @@ PRINT 'This calls Ollama for each row — may take 1-2 minutes.';
 GO
 
 UPDATE dbo.RaceRecaps
-SET RecapEmbedding = AI_GENERATE_EMBEDDINGS(Recap, 'OllamaEmbedding')
+SET RecapEmbedding = AI_GENERATE_EMBEDDINGS(Recap USE MODEL OllamaEmbedding)
 WHERE RecapEmbedding IS NULL;
 GO
 

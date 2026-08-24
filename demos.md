@@ -166,16 +166,30 @@ Detailed walkthrough for each demo in the full-day training session. Demos are l
 
 - **Source:** `sql2025book` — Core Engine chapter demos
 - **Supplemental:** `demos/sqlserver2025/optimizedlocking`
+- **Scripts:** `ch7 - Core Engine/optimized_locking/` (see its `readme.md`)
 - **Time:** ~3 min
 
 **Walkthrough:**
-1. Show traditional locking behavior with concurrent updates
-2. Enable optimized locking
-3. Re-run the same workload — observe eliminated lock escalation
-4. Show reduced lock memory consumption via DMVs
-5. Monitor TID locking in action
+
+*Act 1 — lock footprint (one window, one F5): `02_lock_footprint.sql`*
+1. Run the same UPDATE four times — 4,000 and 10,000 rows × optimized locking OFF/ON
+2. Point at the lock counts: **4,180 locks → 3** on the 4,000-row update. One TID
+   (`XACT`) lock replaces 4,001 individual row locks.
+3. Point at the 10,000-row rows: OFF escalates to a table-level `X` lock
+   (`Escalated? = YES`); ON never escalates.
+
+*Act 2 — what escalation costs (two windows): `03_blocker.sql` + `04_victim.sql`*
+4. Window A holds a 10,000-row update open; Window B updates **one unrelated row**
+   by clustered key. Optimized locking OFF: **~22,000 ms blocked**. ON: **~25 ms**.
+5. Optionally run `05_observe.sql` in a third window to show the blocking chain
+   and the TID lock live.
 
 **Talking point:** "Developers need better concurrency and don't want to worry about locking internals."
+
+> **Note:** Don't promise reduced *lock memory* on stage — it doesn't move in a short
+> demo. SQL Server pre-allocates lock blocks, so `Lock Memory (KB)` reads the same in
+> both modes (measured: 2,608 KB either way). Lock **count** is the honest metric and
+> it's far more dramatic.
 
 ---
 
