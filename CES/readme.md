@@ -99,14 +99,28 @@ RDP to the VM (or use SSMS 22 against `vm_public_ip,1433` if you set
 demo scripts and the consumer app on the VM.
 
 ### 5) Map outputs into demo configuration
-- In `CES/Program.cs`, set:
+
+**See [SETUP.md](SETUP.md)** for the full configuration guide — where every Terraform
+output goes, how to set the Anthropic API key, the managed-identity/RBAC requirement,
+and a troubleshooting table. Short version:
+
+- In `CES/MainWindow.xaml.cs` (**not** `Program.cs` — that is an empty stub), set:
   - `EventHubNamespace` = `eventhub_namespace`
   - `EventHubName` = `eventhub_name`
-  - `BlobStorageUrl` = `storage_account_url`
   - `ServiceBusNamespace` = `servicebus_namespace`
-- In `CES/04_configure_ces.sql`, replace:
-  - `<YourEventHubsNamespace>` from `eventhub_namespace` (namespace name/FQDN as required by script)
-  - `<YourEventHubsInstance>` from `eventhub_name`
+  - (`BlobStorageUrl` is declared but unused — the app does not checkpoint)
+- In `CES/04_configure_ces.sql`:
+  - Line 76 — set `@destination_location` to `<eventhub_namespace>/<eventhub_name>`.
+    The `<YourEventHubsNamespace>` / `<YourEventHubsInstance>` placeholders named in
+    that file's header **do not exist in the body**; the value is hardcoded there.
+  - Line 35 — replace `<YourMasterKeyPassword>` with a strong password.
+- Set `ANTHROPIC_API_KEY` on the VM, then **restart Visual Studio** so the app
+  inherits it.
+- **Run the consumer app on the VM.** RBAC is granted to the VM's managed identity
+  only, so `DefaultAzureCredential` fails from your laptop.
+
+> All resource names carry a random 4-digit suffix that changes on every fresh
+> deploy, so the values committed in this repo are stale. Re-copy after each apply.
 
 ### 6) Destroy infrastructure (optional cleanup)
 
